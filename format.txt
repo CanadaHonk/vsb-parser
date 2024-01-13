@@ -1,0 +1,97 @@
+[file]
+write: [header] 0xC0 [notes] 0xC1 [mods]? 0xFF [signature]
+
+[header]
+// file magic (VSC 0x01 0x00)
+write: 0x56 0x53 0x43 0x01 0x00
+
+[notes]
+for each note in notes
+write: [note]
+
+[note]
+write: 0xA0 0xA2 [noteType] 0xA3 [noteLane] 0xA4 [noteTime]
+
+// 0xA6 ... 0xA7 = optional extra data depending on type
+
+if noteType == 0x02 // held note
+// write: 0xA6 [extraMarkup endTime 0xB3 0x01] 0xA7
+write: 0xA6 0xB3 [endTime] 0x00 0xA7
+
+if noteType == 0x03 // tech note
+/// write: 0xA6 0xB6 0x01 ([extraMarkup data 0xB6 0x01])? 0xA7
+write: 0xA6 0xB6 [data]? 0x00 0xA7
+
+write: 0xA1
+
+[noteType]
+write: nodeType
+1 byte
+
+guess:
+0 normal
+1 bumper normal
+2 held
+3 tech note
+4 sound note
+5 ???
+6 mine
+7 bumper mine
+
+[noteLane]
+write: noteLane
+1 byte
+
+[nodeTime]
+write: nodeTime
+4 bytes, u32
+
+[extraMarkup a0 a1 a2]
+a1 a0 [scriptTypeToBufferType a2]
+
+[scriptTypeToBufferType a0]
+switch a0
+{
+    case 176:
+        return 1;
+    case 177:
+        return 2;
+    case 178:
+        return 5;
+    case 179:
+        return 6;
+    case 181:
+        return 7;
+    case 182:
+        return 8;
+    case 1:
+    case 2:
+    case 4:
+    case 5:
+        return 8;
+    case 3:
+    case 6:
+        return 1;
+    case 7:
+        return 2;
+}
+
+[mods]
+// todo
+
+[signature]
+// "RSA" signature after buffer is padded
+// ensure mod 4?
+// pad with 0x00?
+
+// 384 bytes
+
+// sig is string rsa signature
+i = 0
+while i < 384:
+  write(number("0x" + sig[i * 3 + 1]) + sig[i * 3 + 2]))
+  i++
+
+// it is always verified as true in the game
+// someone literally added "return true" to the top
+// what?? jesus christ

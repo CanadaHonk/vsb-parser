@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<title>vsb-parser</title>
+<div class="modal" id="pick">
+  <h1>Pick a .vsb file</h1>
+
+  <div>
+    <input type="file" id="file" accept=".vsb">
+    <button onclick="navigator.clipboard.writeText('C:\\Program Files (x86)\\Steam\\steamapps\\common\\vividstasis\\Charts')">Copy typical path</button>
+  </div>
+
+  <pre id="log"></pre>
+</div>
+
+<style>
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+
+  background: #14191f;
+  color: #f8f9fe;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  /* flex-direction: column; */
+  justify-content: center;
+
+  font-family: monospace;
+}
+
+.modal {
+  margin: 5vw;
+
+  padding: 18px;
+
+  width: 40vw;
+  max-height: 40vw;
+
+  text-align: center;
+
+  border: #ebf5e5 8px solid;
+  box-shadow: 0px 0px 16px 1px #1b3539, inset 0px 0px 16px 1px #1b3539;
+  background: #78696a;
+
+  border-radius: 4px;
+
+  display: flex;
+  flex-flow: column;
+}
+
+.modal > h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  margin-bottom: 20px;
+}
+
+.modal > p {
+  font-size: 22px;
+}
+
+.modal > input {
+  font-family: monospace;
+}
+
+.modal > pre {
+  color: #e0e4e8;
+  background: #534a4b;
+
+  text-align: left;
+
+  font-size: 16px;
+
+  padding: 8px;
+  margin-top: 60px;
+
+  flex: 1;
+  overflow: auto;
+}
+</style>
+
+<script type="module">
+const { VSBFile } = await import('./parser.js');
+
+const msg = msg => log.appendChild(document.createTextNode(msg + '\n'));
+
+file.onchange = () => {
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const start = performance.now();
+    const file = VSBFile.fromBuffer(reader.result);
+    msg(`parsed ${file.notes.length} notes in ${(performance.now() - start).toFixed(1)}ms!`);
+
+    console.log(file);
+
+    msg('');
+
+    for (let i = 0; i < 8; i++) {
+      const n = file.notes.filter(x => x.type === i).length;
+      if (n !== 0) msg(`${n} type ${i} notes`);
+    }
+  };
+
+  reader.readAsArrayBuffer(file.files[0]);
+};
+</script>
